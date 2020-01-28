@@ -18,7 +18,7 @@ class Find_File:
     #make a backup of the Total Request Overview excel sheet
     def make_copy(self):
         shutil.copy(self.location + "\\" + self.overviewfile + ".xlsx", self.location + 
-                    "\\" + self.overviewfile + " " + self.today + ".xlsx")
+                    "\\" + self.overviewfile + " " + self.today + " backup.xlsx")
 
     #find new files and insert them into a list
     def find_new_files(self, loc, list):

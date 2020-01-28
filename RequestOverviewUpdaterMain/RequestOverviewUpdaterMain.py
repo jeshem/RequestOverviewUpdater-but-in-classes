@@ -1,4 +1,5 @@
 import Find_File
+import Read_Write_File
 
 def main():
     
@@ -15,8 +16,13 @@ def main():
     vmcore_data = {}
 
     list_maker = Find_File.Find_File(loc, overviewfile)
+    read_writer = Read_Write_File.Read_Write_File(loc, overviewfile)
 
     file_list = list_maker.find_new_files(loc, file_list)
+
+    if file_list:
+        read_writer.read_write(file_list)
+
     
     print(*file_list, sep = "\n")
 
