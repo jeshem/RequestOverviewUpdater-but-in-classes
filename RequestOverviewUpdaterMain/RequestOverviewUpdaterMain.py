@@ -3,7 +3,10 @@ import Read_Write_File
 
 def main():
     
+    #change loc to point at a local directory where the request forms and overview file are
     loc = r"C:\Users\shemchen\Desktop\excelPython"
+
+    #make sure overviewfile matches the name of the overview file
     overviewfile = "NS-OCI_Resource Management-v2"
     
     file_list = []

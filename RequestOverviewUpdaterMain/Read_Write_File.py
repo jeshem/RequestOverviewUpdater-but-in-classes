@@ -69,19 +69,53 @@ class Read_Write_File(object):
         print ("reading from " + str(file))
         wb = xw.Book(file)
         sht = wb.sheets[0]
+
         proj_data = {}
         serv_data = {}
         vm_data = {}
         dvm_data = {}
+        
+        error = False
+
         #get data from the request forms
         for search in proj_keys:
             project_keys = sht.api.UsedRange.Find(search + ":")
+
+            '''
+            If the current file being searched does not contain the Project keys,
+            print an error message and exit the loop
+            '''
+            if project_keys == None:
+                   print ("ERROR: " + file + " does not contain the key " + search)
+                   error = True
+                   break
+
             project_values = project_keys.offset(1, 7)
             data = project_values.value
-            proj_data[search] = data
+
+            #make sure all information concerning the project in the request form are filled out
+            if data == None:
+                    print("ERROR: " + file + " is missing Project information missing for " + search)
+                    error = True
+                    break
+            else:
+                proj_data[search] = data
     
         for search in serv_keys:
+            if error:
+                break
+
             service_keys = sht.api.UsedRange.Find(search)
+
+            '''
+            If the current file being searched does not contain the Service keys,
+            print an error message and exit the loop
+            '''
+            if service_keys == None:
+                   print ("ERROR: " + file + " does not contain the key " + search)
+                   error = True
+                   break
+
             service_values = service_keys.offset(1, 8)
 
             if service_values.value == "Not to be requested":
@@ -104,6 +138,13 @@ class Read_Write_File(object):
                             vm_data[core_num] = data
     
         wb.close()
+
+        #if request form is incomplete or does not contain keys, return dictionaries
+        if error:
+            proj_data = {}
+            serv_data = {}
+            vm_data = {}
+
         return proj_data, serv_data, vm_data
 
     #using the data pulled from the request form, write to the overview file
@@ -118,8 +159,14 @@ class Read_Write_File(object):
         current_row = 6
         last_row = 0
 
-        #insert a new row at the bottom of the list
-        #currently, the max_rows is 500. This can be changed above if the list grows to exceed 500
+        '''
+        Insert a new row at the bottom of the list
+        currently, the max_rows is 500. This can be changed above if the list grows to exceed 500.
+
+        Note that the overview file must have an empty row at the end of the list of project names in order
+        for the program to find where to insert the new row. If there is a row in the middle of the file
+        missing its project name, the program will insert the new project before that row.
+        '''
         while current_row in range(max_rows):
             if sht.range((current_row, 1)).value == None:
                 sht.range((current_row, 1)).api.EntireRow.Insert(Shift=xlShiftToDown)
@@ -131,20 +178,12 @@ class Read_Write_File(object):
         #find the columns that the keys are in and insert the corresponding data into those columns
         for i in range(len(proj_keys)):
 
-            #some of the keys taken from the request file do not match the column titles so I have to hardcode it
-            #to look for the correct titles upon coming across those keys
-        
-            #I was unable to have the overview excel sheet automatically copy the formula to calculate the percentage
-            #of 495k and 184k so I have to create it here. the value of four_nine_five_k and one_eight_four_k can be changed above
-            if proj_keys[i] == "Total Monthly Cost":
-                column_title = sht.api.UsedRange.Find("Budget")
-                first_formula_cell = column_title.offset(last_row, 2)
-                first_formula_cell.value = '=' + first_formula_cell.offset(1, 0).address + '/' + four_nine_five_k
-
-                second_formula_cell = first_formula_cell.offset(1, 2)
-                second_formula_cell.value = '=' + first_formula_cell.offset(1, 0).address + '/' + one_eight_four_k
-
-            elif proj_keys[i] == "Project requestor":
+            '''
+            Some of the keys taken from the request form do not match the column titles so I had to hardcode it
+            to look for the correct titles upon coming across those keys.
+            Alternatively, the request form and overview file can be updated to have matching keys/column titles.
+            '''
+            if proj_keys[i] == "Project requestor":
                 column_title = sht.api.UsedRange.Find("Resource requestor")
 
             else:
@@ -165,4 +204,5 @@ class Read_Write_File(object):
         
         for file in file_list:
             self.project_data, self.service_data, self.vmcore_data = self.read_from_excel(file, self.project_keys, self.service_keys, self.vm_keys)
-            self.write_to_excel(self.location, self.overviewfile, self.project_keys, self.service_keys, self.project_data, self.service_data)
+            if self.project_data and self.service_data:
+                self.write_to_excel(self.location, self.overviewfile, self.project_keys, self.service_keys, self.project_data, self.service_data)

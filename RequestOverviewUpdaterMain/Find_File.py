@@ -9,7 +9,6 @@ class Find_File:
     today = ""
 
     def __init__(self, loc, ov_file):
-        print ("Created Find_File object")
         self.location = loc
         self.overviewfile = ov_file
         self.today = str(datetime.datetime.now().date())
@@ -22,7 +21,6 @@ class Find_File:
 
     #find new files and insert them into a list
     def find_new_files(self, loc, list):
-        print("fine_new_files called")
         dirs = os.listdir(loc)
         for file in dirs:
             #get the date the file was modified/created
@@ -34,8 +32,13 @@ class Find_File:
             
             #only get the files that were modified/added today
             if file_mod_time > overview_mod_date or file_create_time > overview_mod_date:
-                #if the file is the overview file, the backup of the overview file, or a master version of a file don't add it to the list
-                if not file.startswith("~$"):
+                
+                '''
+                If the file is the overview file, the backup of the overview file, or a master version of a file don't add it to the list
+                
+                Replace "<insert name of folder you want ignored here>" with the name the folder you want the program to ignore
+                '''
+                if not file.startswith("~$") and file != "<insert name of folder you want ignored here>":
                     #if the file is a directory, go into it and check for new files
                     if os.path.isdir(loc + "\\" + file):
                         list = self.find_new_files(loc + "\\" + file, list)
