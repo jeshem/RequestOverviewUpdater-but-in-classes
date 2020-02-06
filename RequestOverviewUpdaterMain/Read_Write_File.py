@@ -20,6 +20,9 @@ class Read_Write_File(object):
     @staticmethod
     def get_keys_from_init(self, location, proj_keys, serv_keys, vm_keys):
         section_name = ""
+
+        #the config file, "/nsoci.ini", should be in the same directory as the request forms and overview file
+        #change here if you want to rename the config file and/or change whereit is located
         with open(location + "/nsoci.ini") as fp:
             line = fp.readline()
             while line:
@@ -79,12 +82,11 @@ class Read_Write_File(object):
 
         #get data from the request forms
         for search in proj_keys:
+
             project_keys = sht.api.UsedRange.Find(search + ":")
 
-            '''
-            If the current file being searched does not contain the Project keys,
-            print an error message and exit the loop
-            '''
+            #If the request form being searched does not contain the Project keys,
+            #print an error message and exit the loop
             if project_keys == None:
                    print ("ERROR: " + file + " does not contain the key " + search)
                    error = True
@@ -93,7 +95,7 @@ class Read_Write_File(object):
             project_values = project_keys.offset(1, 7)
             data = project_values.value
 
-            #make sure all information concerning the project in the request form are filled out
+            #Make sure project information in the request form are filled out
             if data == None:
                     print("ERROR: " + file + " is missing Project information missing for " + search)
                     error = True
@@ -107,10 +109,8 @@ class Read_Write_File(object):
 
             service_keys = sht.api.UsedRange.Find(search)
 
-            '''
-            If the current file being searched does not contain the Service keys,
-            print an error message and exit the loop
-            '''
+            #If the request form being searched does not contain the Service keys,
+            #print an error message and exit the loop
             if service_keys == None:
                    print ("ERROR: " + file + " does not contain the key " + search)
                    error = True
@@ -139,7 +139,7 @@ class Read_Write_File(object):
     
         wb.close()
 
-        #if request form is incomplete or does not contain keys, return dictionaries
+        #If request form is incomplete or does not contain keys, return dictionaries
         if error:
             proj_data = {}
             serv_data = {}
@@ -147,7 +147,7 @@ class Read_Write_File(object):
 
         return proj_data, serv_data, vm_data
 
-    #using the data pulled from the request form, write to the overview file
+    #Using the data pulled from the request form, write to the overview file
     @staticmethod
     def write_to_excel(loc, overviewfile, proj_keys, serv_keys, proj_data, serv_data):
         wb = xw.Book(loc + "\\" + overviewfile + ".xlsx")
