@@ -154,10 +154,11 @@ class Read_Write_File(object):
         sht = wb.sheets[0]
         xlShiftToDown = xw.constants.InsertShiftDirection.xlShiftDown
         
-        #change these if the number of rows in the overview file start b
-        max_rows = 500
+        #change these if the rows in the overview file start are shifted or if the number of rows exceed 500
         current_row = 6
         last_row = 0
+
+        is_last_row = False
 
         '''
         Insert a new row at the bottom of the list
@@ -167,12 +168,12 @@ class Read_Write_File(object):
         for the program to find where to insert the new row. If there is a row in the middle of the file
         missing its project name, the program will insert the new project before that row.
         '''
-        while current_row in range(max_rows):
+        while not is_last_row:
             if sht.range((current_row, 1)).value == None:
                 sht.range((current_row, 1)).api.EntireRow.Insert(Shift=xlShiftToDown)
                 print("Row Inserted")
                 last_row = current_row - 5
-                current_row += max_rows
+                is_last_row = True
             current_row += 1
     
         #find the columns that the keys are in and insert the corresponding data into those columns
